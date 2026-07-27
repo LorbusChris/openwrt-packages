@@ -90,6 +90,28 @@ It listens on 127.0.0.1 by default. `rest_listen_address` and
 replace the Thread dataset — including the network key — so any non-loopback
 address must be firewalled to trusted hosts.
 
+### ubus methods for Matter
+
+The package carries a patch series, originally by Karsten Sperling, that adds
+the ubus surface a Matter Network Infrastructure Manager needs, plus the
+additions required to manage a running network:
+
+| method | purpose |
+| --- | --- |
+| `version` | OTBR, host, RCP and Thread version strings |
+| `status` | border agent ID, device role, attached flag, active and pending dataset |
+| `provision` | form a network from a hex encoded active dataset |
+| `set_pending` | schedule a migration from a hex encoded pending dataset |
+| `deprovision` | detach and erase the dataset |
+
+It also emits `device_role_changed`, `active_dataset_changed` and
+`pending_dataset_changed` notifications, so a subscriber does not have to poll.
+
+`provision` and `deprovision` go through the host abstraction rather than the
+OpenThread API directly, which keeps the host's Thread enabled state
+consistent — `set_pending` refuses to run otherwise — and makes them work in
+NCP mode as well as RCP.
+
 ### TREL support
 
 Thread Radio Encapsulation Link support is enabled, as it allows Border Routers
